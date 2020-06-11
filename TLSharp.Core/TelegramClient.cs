@@ -47,14 +47,18 @@ namespace TLSharp.Core
         /// <param name="sessionUserId">The name of the session that tracks login info about this TelegramClient connection</param>
         /// <param name="handler">A delegate to invoke when a connection is needed and that will return a TcpClient that will be used to connect</param>
         /// <param name="dcIpVersion">Indicates the preferred IpAddress version to use to connect to a Telegram server</param>
+        /// <param name="sessionFilePath">path where the session will be saved. Not required. Very useful in the Xamarin.Forms platform where each device must use a different path. </param>
         public TelegramClient(
             int apiId, 
             string apiHash,
-            string sessionFilePath = null,  // path dove verrà salvata la sessione. Non obbligatorio. (mconti 2020)
             ISessionStore store = null, 
             string sessionUserId = "session", 
             TcpClientConnectionHandler handler = null,
-            DataCenterIPVersion dcIpVersion = DataCenterIPVersion.Default )
+            DataCenterIPVersion dcIpVersion = DataCenterIPVersion.Default,
+            string sessionFilePath = null  // Path where the session will be saved. Not required. (mconti 2020)
+                                           // Please call with named parameter, eg:
+                                           // Client = new TelegramClient(apiId, apiHash, sessionFilePath: FileSystem.AppDataDirectory);
+            )
         {
             if (apiId == default(int))
                 throw new MissingApiConfigurationException("API_ID");
@@ -63,10 +67,8 @@ namespace TLSharp.Core
 
             if (store == null)
             {
-                // Aggiunto da mconti Giugno 2020
-                // se sessionFilePath viene passato allora lo usiamo
-                // In questo modo il chiamante può passare una path dove salvare la sessione.
-                // Questa cosa è utile con Xamarin.forms perchè ogni device (Android, iOS, UWP) ha una path diversa dove salvare i dati.
+                // (mconti 2020)
+                // Use the param sessionFilePath only if needed
                 if (!String.IsNullOrEmpty(sessionFilePath))
                     store = new FileSessionStore(new System.IO.DirectoryInfo(sessionFilePath));
                 else
